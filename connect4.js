@@ -7,7 +7,7 @@
  * board fills (tie)
  */
 class Game {
-  constructor(p1, p2, a=6, b=7) {
+  constructor(p1, p2, a, b) {
     this.height = a;
     this.width = b;
     this.board = [];
@@ -156,4 +156,4 @@ class Player {
   let color2HTMLElement = document.getElementById("p2color");
   let p1 = new Player(color1HTMLElement.value.toLowerCase());
   let p2 = new Player(color2HTMLElement.value.toLowerCase());
-  new Game(p1, p2); });
+  new Game(p1, p2, 6, 7); });
