@@ -7,14 +7,14 @@
  * board fills (tie)
  */
 class Game {
-  constructor(a, b) {
+  constructor(p1, p2, a=6, b=7) {
     this.height = a;
     this.width = b;
     this.board = [];
-    this.currPlayer = 1;
+    this.players = [p1, p2];
+    this.currPlayer = p1;
     this.makeBoard();
     this.makeHtmlBoard();
-    this.createStartButton();
     this.gameFinished = false;
   }
 
@@ -67,7 +67,7 @@ class Game {
   placeInTable(y, x) {
     const piece = document.createElement('div');
     piece.classList.add('piece');
-    piece.classList.add(`p${this.currPlayer}`);
+    piece.style.backgroundColor = this.currPlayer.color;
     const spot = document.getElementById(`c-${y}-${x}`);
     spot.append(piece);
   }
@@ -101,7 +101,7 @@ class Game {
         const diagDL = [[y, x], [y + 1, x - 1], [y + 2, x - 2], [y + 3, x - 3]];
 
         // find winner (only checking each win-possibility as needed)
-        if (_win(horiz) || _win(vert) || _win(diagDR) || _win(diagDL) || this.board[0].every(cell => cell !== null)) {
+        if (_win(horiz) || _win(vert) || _win(diagDR) || _win(diagDL)) {
           this.gameFinished = true;
           return true;
         }
@@ -112,6 +112,9 @@ class Game {
 
   /** handleClick: handle click of column top to play piece */
   handleClick(evt) {
+    if(this.gameFinished === true) {
+      return;
+    }
     // get x from ID of clicked cell
     const x = Number(evt.target.id.slice("top-".length));
 
@@ -127,7 +130,7 @@ class Game {
 
     // check for win
     if (this.checkForWin()) {
-      return this.endGame(`Player ${this.currPlayer} won!`);
+      return this.endGame(`The ${this.currPlayer.color} player won!`);
     }
 
     // check for tie: if top row is filled, board is filled
@@ -136,22 +139,21 @@ class Game {
     }
 
     // switch players
-    this.currPlayer = this.currPlayer === 1 ? 2 : 1;
-  }
-
-  startGame() {
-    this.board = [];
-    this.currPlayer = 1;
-    this.makeBoard();
-    this.makeHtmlBoard();
-    this.gameFinished = false;
-
-  }
-  createStartButton() {
-    let startGame = new Game(this.height, this.width);
-    const startButton = document.getElementById("button");
-    startButton.addEventListener("click", this.startGame.bind(this));
+    this.currPlayer = this.players[0] === this.currPlayer ? this.players[1] : this.players[0];
   }
 }
-  new Game(6, 7);
 
+class Player {
+  constructor(color) {
+    this.color = color;
+  }
+}
+
+// initialize a newGame variable that doesn't create a game until the start button is clicke
+ const startButton = document.getElementById("button");
+ startButton.addEventListener("click", function() {
+  let color1HTMLElement = document.getElementById("p1color");
+  let color2HTMLElement = document.getElementById("p2color");
+  let p1 = new Player(color1HTMLElement.value.toLowerCase());
+  let p2 = new Player(color2HTMLElement.value.toLowerCase());
+  new Game(p1, p2); });
