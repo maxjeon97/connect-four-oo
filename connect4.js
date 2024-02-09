@@ -13,12 +13,13 @@ class Game {
     this.board = [];
     this.currPlayer = 1;
     this.makeBoard();
-    console.log(this.board);
     this.makeHtmlBoard();
+    this.createStartButton();
+    this.gameFinished = false;
   }
 
   makeBoard() {
-    for(let y = 0; y < this.height; y++) {
+    for (let y = 0; y < this.height; y++) {
       const emptyRow = Array(this.width).fill(null);
       this.board.push(emptyRow);
     }
@@ -78,18 +79,17 @@ class Game {
 
   /** checkForWin: check board cell-by-cell for "does a win start here?" */
   checkForWin() {
-    function _win(cells) {
-      // Check four cells to see if they're all color of current player
-      //  - cells: list of four (y, x) cells
-      //  - returns true if all are legal coordinates & all match currPlayer
-      return cells.every(
-          ([y, x]) =>
-              y >= 0 &&
-              y < this.HEIGHT &&
-              x >= 0 &&
-              x < this.WIDTH &&
-              this.board[y][x] === this.currPlayer);
-    }
+    // Check four cells to see if they're all color of current player
+    //  - cells: list of four (y, x) cells
+    //  - returns true if all are legal coordinates & all match currPlayer
+    const _win = cells => cells.every(
+      ([y, x]) =>
+        y >= 0 &&
+        y < this.height &&
+        x >= 0 &&
+        x < this.width &&
+        this.board[y][x] === this.currPlayer);
+
 
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
@@ -101,7 +101,8 @@ class Game {
         const diagDL = [[y, x], [y + 1, x - 1], [y + 2, x - 2], [y + 3, x - 3]];
 
         // find winner (only checking each win-possibility as needed)
-        if (_win(horiz) || _win(vert) || _win(diagDR) || _win(diagDL)) {
+        if (_win(horiz) || _win(vert) || _win(diagDR) || _win(diagDL) || this.board[0].every(cell => cell !== null)) {
+          this.gameFinished = true;
           return true;
         }
       }
@@ -115,28 +116,42 @@ class Game {
     const x = Number(evt.target.id.slice("top-".length));
 
     // get next spot in column (if none, ignore click)
-    const y = findSpotForCol(x);
+    const y = this.findSpotForCol(x);
     if (y === null) {
       return;
     }
 
     // place piece in board and add to HTML table
     this.board[y][x] = this.currPlayer;
-    placeInTable(y, x);
+    this.placeInTable(y, x);
 
     // check for win
-    if (checkForWin()) {
-      return endGame(`Player ${this.currPlayer} won!`);
+    if (this.checkForWin()) {
+      return this.endGame(`Player ${this.currPlayer} won!`);
     }
 
     // check for tie: if top row is filled, board is filled
     if (this.board[0].every(cell => cell !== null)) {
-      return endGame('Tie!');
+      return this.endGame('Tie!');
     }
 
     // switch players
     this.currPlayer = this.currPlayer === 1 ? 2 : 1;
   }
-}
 
-new Game(6, 7);
+  startGame() {
+    this.board = [];
+    this.currPlayer = 1;
+    this.makeBoard();
+    this.makeHtmlBoard();
+    this.gameFinished = false;
+
+  }
+  createStartButton() {
+    let startGame = new Game(this.height, this.width);
+    const startButton = document.getElementById("button");
+    startButton.addEventListener("click", this.startGame.bind(this));
+  }
+}
+  new Game(6, 7);
+
